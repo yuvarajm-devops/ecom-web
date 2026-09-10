@@ -1,0 +1,194 @@
+name: Ecommerce Microservices CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # =========================
+      # CI - Install Dependencies
+      # =========================
+
+      - name: Install Auth dependencies
+        run: |
+          set -e
+          cd auth-service
+          npm install
+
+      - name: Install Order dependencies
+        run: |
+          set -e
+          cd order-service
+          npm install
+
+      - name: Install Product dependencies
+        run: |
+          set -e
+          cd product-service
+          npm install
+
+      # =========================
+      # CI - JavaScript Tests
+      # =========================
+
+      - name: Test Auth service
+        run: |
+          set -e
+          node --check auth-service/index.js
+
+      - name: Test Order service
+        run: |
+          set -e
+          node --check order-service/index.js
+
+      - name: Test Product service
+        run: |
+          set -e
+          node --check product-service/index.js
+
+      # =========================
+      # CI - Build Docker Images
+      # =========================
+
+      - name: Build Auth Docker image
+        run: |
+          set -e
+          docker build -t ecom-auth ./auth-service
+
+      - name: Build Order Docker image
+        run: |
+          set -e
+          docker build -t ecom-order ./order-service
+
+      - name: Build Product Docker image
+        run: |
+          set -e
+          docker build -t ecom-product ./product-service
+
+      # =========================
+      # CD - Remove Old Containers
+      # =========================
+
+      - name: Remove old containers
+        run: |
+          docker rm -f ecom-auth ecom-order ecom-product || true
+
+      # =========================
+      # CD - Deploy Auth
+      # =========================
+
+      - name: Deploy Auth service
+        run: |
+          set -e
+
+          docker run -d \
+            --name ecom-auth \
+            --network ecommerce-network \
+            -p 3001:3001 \
+            ecom-auth
+
+      # =========================
+      # CD - Deploy Order
+      # =========================
+
+      - name: Deploy Order service
+        run: |
+          set -e
+
+          docker run -d \
+            --name ecom-order \
+            --network ecommerce-network \
+            -p 3002:3002 \
+            ecom-order
+
+      # =========================
+      # CD - Deploy Product
+      # =========================
+
+      - name: Deploy Product service
+        run: |
+          set -e
+
+          docker run -d \
+            --name ecom-product \
+            --network ecommerce-network \
+            -p 3003:3003 \
+            ecom-product
+
+      # =========================
+      # Wait
+      # =========================
+
+      - name: Wait for services
+        run: |
+          sleep 5
+
+      # =========================
+      # Check Containers
+      # =========================
+
+      - name: Check containers are running
+        run: |
+          set -e
+
+          docker ps
+
+          docker inspect -f '{{.State.Running}}' ecom-auth | grep true
+          docker inspect -f '{{.State.Running}}' ecom-order | grep true
+          docker inspect -f '{{.State.Running}}' ecom-product | grep true
+
+      # =========================
+      # Show Logs
+      # =========================
+
+      - name: Show container logs
+        run: |
+          docker logs ecom-auth
+          docker logs ecom-order
+          docker logs ecom-product
+
+      # =========================
+      # Test Auth
+      # =========================
+
+      - name: Test Auth service
+        run: |
+          set -e
+          curl -f http://localhost:3001
+
+      # =========================
+      # Test Order
+      # =========================
+
+      - name: Test Order service
+        run: |
+          set -e
+          curl -f http://localhost:3002
+
+      # =========================
+      # Test Product
+      # =========================
+
+      - name: Test Product service
+        run: |
+          set -e
+          curl -f http://localhost:3003
+
+      # =========================
+      # Success
+      # =========================
+
+      - name: Deployment successful
+        run: |
+          echo "======================================"
+          echo "Ecommerce deployment successful!"
+          echo "======================================"
