@@ -56,3 +56,4 @@ docker run -p 3003:3000 --env SERVICE_NAME=order-service order-service
 
 # 👉 Pro tip:
 ### make sure the **security group** for your EC2 instance allows **inbound traffic on ports 3001, 3002, 3003 (TCP)**. Otherwise, you won’t be able to access the services externally.  
+# CI/CD test
