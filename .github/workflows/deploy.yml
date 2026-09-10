@@ -11,11 +11,16 @@ jobs:
 
     steps:
 
+      # =========================
+      # CHECKOUT
+      # =========================
+
       - name: Checkout code
         uses: actions/checkout@v4
 
+
       # =========================
-      # CI - Install Dependencies
+      # CI - INSTALL DEPENDENCIES
       # =========================
 
       - name: Install Auth dependencies
@@ -36,8 +41,9 @@ jobs:
           cd product-service
           npm install
 
+
       # =========================
-      # CI - JavaScript Tests
+      # CI - JAVASCRIPT TEST
       # =========================
 
       - name: Test Auth service
@@ -55,38 +61,72 @@ jobs:
           set -e
           node --check product-service/index.js
 
+
       # =========================
-      # CI - Build Docker Images
+      # CHECK DOCKER + BUILDX
+      # =========================
+
+      - name: Check Docker
+        run: |
+          set -e
+          docker --version
+          docker buildx version
+          docker ps
+
+
+      # =========================
+      # CI - BUILD DOCKER IMAGES
       # =========================
 
       - name: Build Auth Docker image
         run: |
           set -e
-          docker build -t ecom-auth ./auth-service
+          docker buildx build \
+            -t ecom-auth \
+            ./auth-service \
+            --load
 
       - name: Build Order Docker image
         run: |
           set -e
-          docker build -t ecom-order ./order-service
+          docker buildx build \
+            -t ecom-order \
+            ./order-service \
+            --load
 
       - name: Build Product Docker image
         run: |
           set -e
-          docker build -t ecom-product ./product-service
+          docker buildx build \
+            -t ecom-product \
+            ./product-service \
+            --load
+
 
       # =========================
-      # CD - Remove Old Containers
+      # SHOW IMAGES
+      # =========================
+
+      - name: Check Docker images
+        run: |
+          set -e
+          docker images
+
+
+      # =========================
+      # CD - REMOVE OLD CONTAINERS
       # =========================
 
       - name: Remove old containers
         run: |
           docker rm -f ecom-auth ecom-order ecom-product || true
 
+
       # =========================
-      # CD - Deploy Auth
+      # CD - DEPLOY AUTH
       # =========================
 
-      - name: Deploy Auth service
+      - name: Deploy Auth container
         run: |
           set -e
 
@@ -96,11 +136,12 @@ jobs:
             -p 3001:3001 \
             ecom-auth
 
+
       # =========================
-      # CD - Deploy Order
+      # CD - DEPLOY ORDER
       # =========================
 
-      - name: Deploy Order service
+      - name: Deploy Order container
         run: |
           set -e
 
@@ -110,11 +151,12 @@ jobs:
             -p 3002:3002 \
             ecom-order
 
+
       # =========================
-      # CD - Deploy Product
+      # CD - DEPLOY PRODUCT
       # =========================
 
-      - name: Deploy Product service
+      - name: Deploy Product container
         run: |
           set -e
 
@@ -124,71 +166,108 @@ jobs:
             -p 3003:3003 \
             ecom-product
 
+
       # =========================
-      # Wait
+      # WAIT FOR APPLICATIONS
       # =========================
 
-      - name: Wait for services
+      - name: Wait for containers
         run: |
+          set -e
           sleep 5
 
+
       # =========================
-      # Check Containers
+      # TEST CONTAINERS
       # =========================
 
-      - name: Check containers are running
+      - name: Test containers are running
         run: |
           set -e
 
+          echo "Checking running containers..."
+
           docker ps
 
+          echo "Checking Auth container..."
           docker inspect -f '{{.State.Running}}' ecom-auth | grep true
+
+          echo "Checking Order container..."
           docker inspect -f '{{.State.Running}}' ecom-order | grep true
+
+          echo "Checking Product container..."
           docker inspect -f '{{.State.Running}}' ecom-product | grep true
 
+          echo "All containers are running successfully."
+
+
       # =========================
-      # Show Logs
+      # TEST AUTH APPLICATION
+      # =========================
+
+      - name: Test Auth application
+        run: |
+          set -e
+
+          echo "Testing Auth service..."
+          curl -f http://localhost:3001
+
+          echo
+          echo "Auth service test passed."
+
+
+      # =========================
+      # TEST ORDER APPLICATION
+      # =========================
+
+      - name: Test Order application
+        run: |
+          set -e
+
+          echo "Testing Order service..."
+          curl -f http://localhost:3002
+
+          echo
+          echo "Order service test passed."
+
+
+      # =========================
+      # TEST PRODUCT APPLICATION
+      # =========================
+
+      - name: Test Product application
+        run: |
+          set -e
+
+          echo "Testing Product service..."
+          curl -f http://localhost:3003
+
+          echo
+          echo "Product service test passed."
+
+
+      # =========================
+      # SHOW LOGS
       # =========================
 
       - name: Show container logs
         run: |
+          echo "========== AUTH LOGS =========="
           docker logs ecom-auth
+
+          echo "========== ORDER LOGS =========="
           docker logs ecom-order
+
+          echo "========== PRODUCT LOGS =========="
           docker logs ecom-product
 
-      # =========================
-      # Test Auth
-      # =========================
-
-      - name: Test Auth service
-        run: |
-          set -e
-          curl -f http://localhost:3001
 
       # =========================
-      # Test Order
-      # =========================
-
-      - name: Test Order service
-        run: |
-          set -e
-          curl -f http://localhost:3002
-
-      # =========================
-      # Test Product
-      # =========================
-
-      - name: Test Product service
-        run: |
-          set -e
-          curl -f http://localhost:3003
-
-      # =========================
-      # Success
+      # FINAL STATUS
       # =========================
 
       - name: Deployment successful
         run: |
           echo "======================================"
-          echo "Ecommerce deployment successful!"
+          echo "Ecommerce Microservices Deployment"
           echo "======================================"
