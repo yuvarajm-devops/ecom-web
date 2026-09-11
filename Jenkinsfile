@@ -34,7 +34,7 @@ pipeline {
 
                     docker run -d \
                         --name ecom-auth \
-                        -p 3001:3001 \
+                        -p 5001:3001 \
                         ecom-auth
                 '''
             }
@@ -47,7 +47,7 @@ pipeline {
 
                     docker run -d \
                         --name ecom-order \
-                        -p 3002:3002 \
+                        -p 5002:3002 \
                         ecom-order
                 '''
             }
@@ -60,7 +60,7 @@ pipeline {
 
                     docker run -d \
                         --name ecom-products \
-                        -p 3003:3003 \
+                        -p 5003:3003 \
                         ecom-product
                 '''
             }
@@ -73,7 +73,7 @@ pipeline {
                     docker ps
 
                     echo "Checking application ports..."
-                    ss -ltn | grep -E ':3001|:3002|:3003' || true
+                    ss -ltn | grep -E ':5001|:5002|:5003' || true
                 '''
             }
         }
@@ -92,9 +92,9 @@ Build Number: ${env.BUILD_NUMBER}
 Status: SUCCESS
 
 Docker Services:
-Auth Service    : Port 3001
-Order Service   : Port 3002
-Product Service : Port 3003
+Auth Service    : Port 5001
+Order Service   : Port 5002
+Product Service : Port 5003
 
 Build URL:
 ${env.BUILD_URL}
