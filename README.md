@@ -62,3 +62,5 @@ docker run -p 3003:3000 --env SERVICE_NAME=order-service order-service
 
 
 email testing
+email testing2
+jenkins pipeline
