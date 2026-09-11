@@ -99,7 +99,7 @@ Product Service : Port 5003
 Build URL:
 ${env.BUILD_URL}
 """,
-                to: "YOUR_EMAIL@gmail.com"
+                to: "yuvarajm.ops@gmail.com"
             )
         }
 
@@ -118,7 +118,7 @@ Please check the Jenkins Console Output.
 Build URL:
 ${env.BUILD_URL}
 """,
-                to: "YOUR_EMAIL@gmail.com"
+                to: "yuvarajm.ops@gmail.com"
             )
         }
 
