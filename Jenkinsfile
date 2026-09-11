@@ -83,47 +83,28 @@ pipeline {
 
         success {
             emailext(
-                subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-Jenkins Build Successful
-
-Job: ${env.JOB_NAME}
-Build Number: ${env.BUILD_NUMBER}
-Status: SUCCESS
-
-Docker Services:
-Auth Service    : Port 5001
-Order Service   : Port 5002
-Product Service : Port 5003
-
-Build URL:
-${env.BUILD_URL}
-""",
+                subject: "Jenkins Build",
+                body: "SUCCESS",
                 to: "yuvarajm.ops@gmail.com"
             )
         }
 
         failure {
             emailext(
-                subject: "FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-Jenkins Build Failed
-
-Job: ${env.JOB_NAME}
-Build Number: ${env.BUILD_NUMBER}
-Status: FAILURE
-
-Please check the Jenkins Console Output.
-
-Build URL:
-${env.BUILD_URL}
-""",
+                subject: "Jenkins Build",
+                body: "FAILED",
                 to: "yuvarajm.ops@gmail.com"
             )
         }
 
         always {
-            echo "Jenkins pipeline finished with status: ${currentBuild.currentResult}"
+            script {
+                if (currentBuild.currentResult == 'SUCCESS') {
+                    echo "SUCCESS"
+                } else {
+                    echo "FAILED"
+                }
+            }
         }
     }
 }
