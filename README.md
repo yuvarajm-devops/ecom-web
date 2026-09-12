@@ -4,8 +4,8 @@ Microservices-based architecture for an e-commerce app with CI/CD using Jenkins,
 ---
 
 ## 📌 Services
-- 🔐 **Auth Service** → Port `3001`
-- 📦 **Product Service** → Port `3002`
+- 🔐 **Auth Service** → Port '5001`
+- 📦 **Product Service** → Port `300`
 - 🛍️ **Order Service** → Port `3003`
 
 ---
